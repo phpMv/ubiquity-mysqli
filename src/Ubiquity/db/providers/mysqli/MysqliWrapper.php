@@ -16,7 +16,7 @@ use Ubiquity\db\providers\AbstractDbWrapper;
 class MysqliWrapper extends AbstractDbWrapper {
 	protected $transactionLevel = 0;
 	
-	protected function _execute(\mysqli_stmt $statement, array $values = null){
+	protected function _execute($statement, array $values = null){
 		if($values!==null){
 			$statement->bind_param(str_repeat('s', sizeof($values)), ...$values);
 		}
@@ -36,7 +36,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 				$result[] = $row[0];
 			}
 		}
-		$statement->close();
+		//$statement->close();
 		return $result;
 	}
 	
@@ -46,21 +46,21 @@ class MysqliWrapper extends AbstractDbWrapper {
 	
 	public function fetchAll($statement, array $values = null, $mode = null) {
 		$result = false;
-		if ($this->_execute ( $values )) {
+		if ($statement->execute($values )) {
 			$res = $statement->get_result();
-			$result = $res->fetch_all($mode);
+			$result = $res->fetch_all($mode??\MYSQLI_ASSOC);
 		}
-		$statement->close();
+		//$statement->close();
 		return $result;
 	}
 	
 	public function fetchOne($statement, array $values = null, $mode = null) {
 		$result = false;
-		if ($this->_execute ( $values )) {
+		if ($this->_execute ($statement, $values )) {
 			$res = $statement->get_result();
 			$result = $res->fetch_array( $mode );
 		}
-		$statement->close();
+		//$statement->close();
 		return $result;
 	}
 	
@@ -69,11 +69,12 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function prepareStatement(string $sql) {
-		return $this->dbInstance->prepare( $sql );
+		$st=$this->dbInstance->prepare ( $sql );
+		return new MysqliStatement($st);
 	}
 	
 	public function fetchColumn($statement, array $values = null, int $columnNumber = null) {
-		if ($this->_execute ( $values )) {
+		if ($this->_execute ( $statement,$values )) {
 			$res = $statement->get_result();
 			return $res->fetch_row()[$columnNumber??0];
 		}
@@ -81,7 +82,10 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function getStatement($sql) {
-		return $this->dbInstance->prepare ( $sql );
+		\preg_match_all('/:([[:alpha:]]+)/', $sql,$params);
+		$sql=\preg_replace('/:[[:alpha:]]+/','?',$sql);
+		$st=$this->dbInstance->prepare ( $sql);
+		return new MysqliStatement($st,$params);
 	}
 	
 	public function execute($sql) {
@@ -117,7 +121,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function executeStatement($statement, array $values = null) {
-		return $this->_execute ( $values );
+		return $this->_execute ( $statement,$values );
 	}
 	
 	public function getTablesName() {
@@ -129,7 +133,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $result;
 	}
 	
-	public function statementRowCount(\mysqli_stmt $statement) {
+	public function statementRowCount($statement) {
 		return $statement->num_rows;
 	}
 	
@@ -187,7 +191,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 												 REFERENCED_TABLE_NAME = '" . $tableName . "'
 												 AND REFERENCED_COLUMN_NAME = '" . $pkName . "'
 												 AND TABLE_SCHEMA = '" . $dbName . "';" );
-		return $recordset->fetchAll ( \PDO::FETCH_ASSOC );
+		return $recordset->fetch_all( \MYSQLI_ASSOC );
 	}
 	
 	public function getFieldsInfos($tableName) {
