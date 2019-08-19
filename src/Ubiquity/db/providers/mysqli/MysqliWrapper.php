@@ -36,7 +36,6 @@ class MysqliWrapper extends AbstractDbWrapper {
 				$result[] = $row[0];
 			}
 		}
-		//$statement->close();
 		return $result;
 	}
 	
@@ -50,7 +49,6 @@ class MysqliWrapper extends AbstractDbWrapper {
 			$res = $statement->get_result();
 			$result = $res->fetch_all($mode??\MYSQLI_ASSOC);
 		}
-		//$statement->close();
 		return $result;
 	}
 	

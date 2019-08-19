@@ -29,11 +29,11 @@ class MysqliStatement {
 	
 	public function execute(array $values = null){
 		if($this->statement){
-		if($values!==null){
-			$values=$this->replaceNamedParams($values);
-			$this->statement->bind_param(\str_repeat('s', \sizeof($values)), ...$values);
-		}
-		return $this->statement->execute();
+			if($values!==null){
+				$values=$this->replaceNamedParams($values);
+				$this->statement->bind_param(\str_repeat('s', \sizeof($values)), ...$values);
+			}
+			return $this->statement->execute();
 		}
 		return false;
 	}
