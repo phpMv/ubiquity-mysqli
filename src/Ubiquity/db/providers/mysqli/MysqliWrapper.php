@@ -58,7 +58,6 @@ class MysqliWrapper extends AbstractDbWrapper {
 			$res = $statement->get_result();
 			$result = $res->fetch_array( $mode );
 		}
-		//$statement->close();
 		return $result;
 	}
 	
@@ -200,5 +199,24 @@ class MysqliWrapper extends AbstractDbWrapper {
 			$fieldsInfos [$field ['Field']] = [ "Type" => $field ['Type'],"Nullable" => $field ["Null"] ];
 		}
 		return $fieldsInfos;
+	}
+	
+	/**
+	 * @param string $dbType
+	 * @param string $dbName
+	 * @param string $serverName
+	 * @param string $port
+	 * @param string $user
+	 * @param string $password
+	 * @param array $options
+	 * @return \mysqli
+	 */
+	public function getNewDbInstance(string $dbType, $dbName, $serverName, string $port, string $user, string $password, array $options) {
+		$dbInstance = new \mysqli( $serverName,$user,$password,$dbName, $port);
+		$dbInstance->set_charset("utf8");
+		foreach ($options as $key=>$value){
+			$dbInstance->set_opt($key, $value);
+		}
+		return $dbInstance;
 	}
 }
