@@ -12,6 +12,9 @@ namespace Ubiquity\db\providers\mysqli;
  *
  */
 class MysqliStatement {
+	/**
+	 * @var \mysqli_stmt
+	 */
 	protected $statement;
 	protected $preparedParams;
 	

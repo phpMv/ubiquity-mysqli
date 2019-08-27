@@ -3,6 +3,7 @@
 namespace Ubiquity\db\providers\mysqli;
 
 use Ubiquity\db\providers\AbstractDbWrapper;
+use Ubiquity\exceptions\DBException;
 
 /**
  * Ubiquity\db\providers\mysqli$MysqliWrapper
@@ -218,5 +219,13 @@ class MysqliWrapper extends AbstractDbWrapper {
 			$dbInstance->set_opt($key, $value);
 		}
 		return $dbInstance;
+	}
+	
+	public function pool() {
+		throw new DBException ( 'Mysqli does not accept connection pooling' );
+	}
+	
+	public function freePool($db) {
+		throw new DBException ( 'Mysqli does not accept connection pooling' );
 	}
 }
