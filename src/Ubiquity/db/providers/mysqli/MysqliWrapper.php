@@ -24,6 +24,16 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $statement->execute();
 	}
 	
+	public function _optPrepareAndExecute($sql, array $values = null) {
+		$statement = $this->_getStatement ( $sql );
+		$result = false;
+		if ($statement->execute($values )) {
+			$res = $statement->get_result();
+			$result = $res->fetch_all(\MYSQLI_ASSOC);
+		}
+		return $result;
+	}
+	
 	public function __construct($dbType = 'mysql') {
 		$this->quote = '`';
 	}
@@ -226,6 +236,10 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function freePool($db) {
+		throw new DBException ( 'Mysqli does not accept connection pooling' );
+	}
+	
+	public function setPool($pool) {
 		throw new DBException ( 'Mysqli does not accept connection pooling' );
 	}
 }
