@@ -17,6 +17,10 @@ use Ubiquity\exceptions\DBException;
 class MysqliWrapper extends AbstractDbWrapper {
 	protected $transactionLevel = 0;
 	
+	protected function getInstance(){
+		return $this->dbInstance;
+	}
+	
 	protected function _execute($statement, array $values = null){
 		if($values!==null){
 			$statement->bind_param(str_repeat('s', sizeof($values)), ...$values);
@@ -53,7 +57,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function lastInsertId() {
-		return $this->dbInstance->insert_id;
+		return $this->getInstance()->insert_id;
 	}
 	
 	public function fetchAll($statement, array $values = null, $mode = null) {
@@ -81,7 +85,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function prepareStatement(string $sql) {
-		$st=$this->dbInstance->prepare ( $sql );
+		$st=$this->getInstance()->prepare ( $sql );
 		return new MysqliStatement($st);
 	}
 	
@@ -96,12 +100,12 @@ class MysqliWrapper extends AbstractDbWrapper {
 	public function getStatement($sql) {
 		\preg_match_all('/:([[:alpha:]]+)/', $sql,$params);
 		$sql=\preg_replace('/:[[:alpha:]]+/','?',$sql);
-		$st=$this->dbInstance->prepare ( $sql);
+		$st=$this->getInstance()->prepare ( $sql);
 		return new MysqliStatement($st,$params);
 	}
 	
 	public function execute($sql) {
-		return $this->dbInstance->real_query( $sql );
+		return $this->getInstance()->real_query( $sql );
 	}
 	
 	public function connect(string $dbType, $dbName, $serverName, string $port, string $user, string $password, array $options) {
@@ -121,15 +125,15 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function query(string $sql) {
-		return $this->dbInstance->query( $sql );
+		return $this->getInstance()->query( $sql );
 	}
 	
 	public function queryAll(string $sql, int $fetchStyle = null) {
-		return $this->dbInstance->query ( $sql )->fetch_all( $fetchStyle );
+		return $this->getInstance()->query ( $sql )->fetch_all( $fetchStyle );
 	}
 	
 	public function queryColumn(string $sql, int $columnNumber = null) {
-		return $this->dbInstance->query ( $sql )->fetch_row()[$columnNumber??0];
+		return $this->getInstance()->query ( $sql )->fetch_row()[$columnNumber??0];
 	}
 	
 	public function executeStatement($statement, array $values = null) {
@@ -137,7 +141,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function getTablesName() {
-		$query = $this->dbInstance->query ( 'SHOW TABLES' );
+		$query = $this->getInstance()->query ( 'SHOW TABLES' );
 		$result=[];
 		while ($row = $query->fetch_row()){
 			$result[] = $row[0];
@@ -154,27 +158,27 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function commit() {
-		return $this->dbInstance->commit();
+		return $this->getInstance()->commit();
 	}
 	
 	public function rollBack() {
-		return $this->dbInstance->rollBack ();
+		return $this->getInstance()->rollBack ();
 	}
 	
 	public function beginTransaction() {
-		return $this->dbInstance->begin_transaction();
+		return $this->getInstance()->begin_transaction();
 	}
 	
 	public function savePoint($level) {
-		$this->dbInstance->savepoint($level);
+		$this->getInstance()->savepoint($level);
 	}
 	
 	public function releasePoint($level) {
-		$this->dbInstance->release_savepoint($level);
+		$this->getInstance()->release_savepoint($level);
 	}
 	
 	public function rollbackPoint($level) {
-		$this->dbInstance->rollback($level);
+		$this->getInstance()->rollback($level);
 	}
 	
 	public function nestable() {
@@ -182,12 +186,12 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function ping() {
-		return $this->dbInstance->ping();
+		return $this->getInstance()->ping();
 	}
 	
 	public function getPrimaryKeys($tableName) {
 		$fieldkeys = array ();
-		$recordset = $this->dbInstance->query ( "SHOW KEYS FROM `{$tableName}` WHERE Key_name = 'PRIMARY'" );
+		$recordset = $this->getInstance()->query ( "SHOW KEYS FROM `{$tableName}` WHERE Key_name = 'PRIMARY'" );
 		$keys = $recordset->fetch_all( \MYSQLI_ASSOC );
 		foreach ( $keys as $key ) {
 			$fieldkeys [] = $key ['Column_name'];
@@ -196,7 +200,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function getForeignKeys($tableName, $pkName, $dbName = null) {
-		$recordset = $this->dbInstance->query ( "SELECT *
+		$recordset = $this->getInstance()->query ( "SELECT *
 												FROM
 												 information_schema.KEY_COLUMN_USAGE
 												WHERE
@@ -208,7 +212,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	
 	public function getFieldsInfos($tableName) {
 		$fieldsInfos = array ();
-		$recordset = $this->dbInstance->query ( "SHOW COLUMNS FROM `{$tableName}`" );
+		$recordset = $this->getInstance()->query ( "SHOW COLUMNS FROM `{$tableName}`" );
 		$fields = $recordset->fetch_all( \MYSQLI_ASSOC );
 		foreach ( $fields as $field ) {
 			$fieldsInfos [$field ['Field']] = [ "Type" => $field ['Type'],"Nullable" => $field ["Null"] ];
@@ -216,34 +220,15 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $fieldsInfos;
 	}
 	
-	/**
-	 * @param string $dbType
-	 * @param string $dbName
-	 * @param string $serverName
-	 * @param string $port
-	 * @param string $user
-	 * @param string $password
-	 * @param array $options
-	 * @return \mysqli
-	 */
-	public function getNewDbInstance(string $dbType, $dbName, $serverName, string $port, string $user, string $password, array $options) {
-		$dbInstance = new \mysqli( $serverName,$user,$password,$dbName, $port);
-		$dbInstance->set_charset("utf8");
-		foreach ($options as $key=>$value){
-			$dbInstance->set_opt($key, $value);
-		}
-		return $dbInstance;
-	}
-	
 	public function pool() {
-		throw new DBException ( 'Mysqli does not accept connection pooling' );
+		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
 	}
 	
 	public function freePool($db) {
-		throw new DBException ( 'Mysqli does not accept connection pooling' );
+		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
 	}
 	
 	public function setPool($pool) {
-		throw new DBException ( 'Mysqli does not accept connection pooling' );
+		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
 	}
 }
