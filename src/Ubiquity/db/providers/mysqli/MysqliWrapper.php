@@ -30,6 +30,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 		if ($statement->execute($values )) {
 			$res = $statement->get_result();
 			$result = $res->fetch_all(\MYSQLI_ASSOC);
+			$statement->free_result();
 		}
 		return $result;
 	}
@@ -46,6 +47,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 			while ($row = $res->fetch_row()){
 				$result[] = $row[0];
 			}
+			$statement->free_result();
 		}
 		return $result;
 	}
@@ -59,6 +61,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 		if ($statement->execute($values )) {
 			$res = $statement->get_result();
 			$result = $res->fetch_all($mode??\MYSQLI_ASSOC);
+			$statement->free_result();
 		}
 		return $result;
 	}
@@ -68,6 +71,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 		if ($this->_execute ($statement, $values )) {
 			$res = $statement->get_result();
 			$result = $res->fetch_array( $mode );
+			$statement->free_result();
 		}
 		return $result;
 	}

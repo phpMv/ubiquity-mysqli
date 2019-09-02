@@ -48,13 +48,19 @@ class MysqliStatement {
 	
 	public function fetchColumn($columnNumber=0){
 		$res = $this->statement->get_result();
-		return $res->fetch_row()[$columnNumber??0];
+		$result= $res->fetch_row()[$columnNumber??0];
+		$res->free_result();
+		return $result;
 	}
 	
 	public function get_result(){
 		if($this->statement)
 			return $this->statement->get_result();
 		return [];
+	}
+	
+	public function free_result(){
+		$this->statement->free_result();
 	}
 	
 	public function close(){
