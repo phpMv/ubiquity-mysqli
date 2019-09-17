@@ -13,8 +13,7 @@
 		"mysqli"
 	],
 	"require" : {
-		"php" : ">7.0",
-		"phpmv/ubiquity": "dev-multi-db-types"
+		"php" : ">7.0"
 	},
 	"license" : "Apache-2.0",
 	"authors" : [{

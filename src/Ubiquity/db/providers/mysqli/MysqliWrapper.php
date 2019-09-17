@@ -219,16 +219,4 @@ class MysqliWrapper extends AbstractDbWrapper {
 		}
 		return $fieldsInfos;
 	}
-	
-	public function pool() {
-		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
-	}
-	
-	public function freePool($db) {
-		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
-	}
-	
-	public function setPool($pool) {
-		throw new DBException ( 'Mysqli wrapper does not accept connection pooling, use MysqiSwooleWrapper instead' );
-	}
 }
