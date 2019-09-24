@@ -186,7 +186,8 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public function ping() {
-		return $this->getInstance()->ping();
+		$instance=$this->getInstance();
+		return ($instance != null) && $instance->ping();
 	}
 	
 	public function getPrimaryKeys($tableName) {
