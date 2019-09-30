@@ -81,7 +81,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 	
 	public static function getAvailableDrivers() {
-		return 'mysql';
+		return ['mysql'];
 	}
 	
 	public function prepareStatement(string $sql) {
