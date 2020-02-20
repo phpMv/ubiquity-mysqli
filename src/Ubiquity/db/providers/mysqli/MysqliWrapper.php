@@ -9,7 +9,7 @@ use Ubiquity\exceptions\DBException;
  * This class is part of Ubiquity
  *
  * @author jcheron <myaddressmail@gmail.com>
- * @version 1.0.0
+ * @version 1.0.1
  * @property \mysqli $dbInstance
  *
  */
@@ -230,7 +230,11 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $fieldsInfos;
 	}
 
-	public function quoteValue($value, $type = null) {
+	public function quoteValue($value, $type = 2) {
 		return "'" . $this->getInstance()->real_escape_string($value) . "'";
+	}
+
+	public function getRowNum(string $tableName, string $pkName, string $condition): int {
+		return $this->fetchColumn("SELECT num FROM (SELECT *, @rownum:=@rownum + 1 AS num FROM `{$tableName}`, (SELECT @rownum:=0) r ORDER BY {$pkName}) d WHERE " . $condition);
 	}
 }
