@@ -28,8 +28,8 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $statement->execute();
 	}
 
-	public function _optPrepareAndExecute($sql, array $values = null) {
-		$statement = $this->_getStatement($sql);
+	public function _optPrepareAndExecute($sql, array $values = null, $dbInstance = null) {
+		$statement = $this->_getStatement($sql, $dbInstance);
 		$result = false;
 		if ($statement->execute($values)) {
 			$res = $statement->get_result();
@@ -99,10 +99,11 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return false;
 	}
 
-	public function getStatement($sql) {
+	public function getStatement($sql, $dbInstance = null) {
 		\preg_match_all('/:([[:alpha:]]+)/', $sql, $params);
 		$sql = \preg_replace('/:[[:alpha:]]+/', '?', $sql);
-		$st = $this->getInstance()->prepare($sql);
+		$instance = $dbInstance ?? $this->getInstance();
+		$st = $instance->prepare($sql);
 		return new MysqliStatement($st, $params);
 	}
 
