@@ -235,7 +235,8 @@ class MysqliWrapper extends AbstractDbWrapper {
 	}
 
 	public function getRowNum(string $tableName, string $pkName, string $condition): int {
-		return $this->fetchColumn("SELECT num FROM (SELECT *, @rownum:=@rownum + 1 AS num FROM `{$tableName}`, (SELECT @rownum:=0) r ORDER BY {$pkName}) d WHERE " . $condition);
+		$sql = "SELECT num FROM (SELECT *, @rownum:=@rownum + 1 AS num FROM `{$tableName}`, (SELECT @rownum:=0) r ORDER BY {$pkName}) d WHERE " . $condition;
+		return $this->fetchColumn($this->getStatement($sql));
 	}
 
 	public function groupConcat(string $fields, string $separator): string {
