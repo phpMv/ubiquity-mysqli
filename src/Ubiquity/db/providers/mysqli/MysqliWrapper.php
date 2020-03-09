@@ -56,7 +56,7 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $result;
 	}
 
-	public function lastInsertId() {
+	public function lastInsertId($name = null) {
 		return $this->getInstance()->insert_id;
 	}
 
@@ -236,5 +236,13 @@ class MysqliWrapper extends AbstractDbWrapper {
 
 	public function getRowNum(string $tableName, string $pkName, string $condition): int {
 		return $this->fetchColumn("SELECT num FROM (SELECT *, @rownum:=@rownum + 1 AS num FROM `{$tableName}`, (SELECT @rownum:=0) r ORDER BY {$pkName}) d WHERE " . $condition);
+	}
+
+	public function groupConcat(string $fields, string $separator): string {
+		return "GROUP_CONCAT({$fields} SEPARATOR '{$separator}')";
+	}
+
+	public function toStringOperator() {
+		return '';
 	}
 }
