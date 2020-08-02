@@ -28,12 +28,16 @@ class MysqliWrapper extends AbstractDbWrapper {
 		return $statement->execute();
 	}
 
-	public function _optPrepareAndExecute($sql, array $values = null) {
+	public function _optPrepareAndExecute($sql, array $values = null, $one = false) {
 		$statement = $this->_getStatement($sql);
 		$result = false;
 		if ($statement->execute($values)) {
 			$res = $statement->get_result();
-			$result = $res->fetch_all(\MYSQLI_ASSOC);
+			if($one){
+				$result = $res->fetch_array(\MYSQLI_ASSOC);
+			}else{
+				$result = $res->fetch_all(\MYSQLI_ASSOC);
+			}
 			$statement->free_result();
 		}
 		return $result;
